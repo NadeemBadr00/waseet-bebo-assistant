@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {writeFile} from 'node:fs/promises';
+const base='https://waseet-ai-api-1041761245251.us-central1.run.app';
+const status=await fetch(base+'/v1/bebo/status');assert.equal(status.status,200);assert.equal((await status.json()).configured,true);
+const preflight=await fetch(base+'/v1/bebo/chat',{method:'OPTIONS',headers:{Origin:'null','Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}});assert.equal(preflight.status,204);assert.equal(preflight.headers.get('access-control-allow-origin'),'*');
+const protectedApi=await fetch(base+'/v1/ai/tts/catalog');assert.equal(protectedApi.status,401);
+const response=await fetch(base+'/v1/bebo/chat',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://recipient.example'},body:JSON.stringify({message:'أنا أول مرة أستخدم بيبو. قول لي أقدر أعمل إيه؟',dialect:'egyptian',history:[]}),signal:AbortSignal.timeout(65000)});
+assert.equal(response.status,200,await response.clone().text());const data=await response.json();assert.equal(data.source,'waseet');assert.ok(data.reply.length<=220);console.log(JSON.stringify({chat:'passed',reply:data.reply,cors:response.headers.get('access-control-allow-origin'),privateApi:'still401'}));
+const speech=await fetch(base+'/v1/bebo/speech',{method:'POST',headers:{'Content-Type':'application/json',Origin:'null'},body:JSON.stringify({text:'أهلاً بيك! أنا بيبو، جاهز أساعدك.',dialect:'egyptian',voice:'Puck',model:'gemini-3.8-flash-lite-tts'}),signal:AbortSignal.timeout(65000)});
+assert.equal(speech.status,200,await speech.clone().text());const wav=Buffer.from(await speech.arrayBuffer());assert.ok(wav.length>1000);assert.equal(wav.toString('ascii',0,4),'RIFF');assert.equal(wav.toString('ascii',8,12),'WAVE');await writeFile('./tmp/bebo-cloud-speech.wav',wav);console.log(JSON.stringify({speech:'passed',bytes:wav.length,type:speech.headers.get('content-type')}));

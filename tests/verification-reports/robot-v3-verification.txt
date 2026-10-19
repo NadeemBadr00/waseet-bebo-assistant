@@ -1,0 +1,54 @@
+53 passed · 0 failed
+PASS Registered and visible
+PASS robot-sprites.png loads
+PASS robot-actions.png loads
+PASS robot-speaking.png loads
+PASS robot-antics.png loads
+PASS Pose idle
+PASS Pose blink
+PASS Pose wave
+PASS Pose happy
+PASS Pose thinking
+PASS Pose sleep
+PASS Pose walk
+PASS Pose typing
+PASS Pose jump
+PASS Pose land
+PASS Pose drag
+PASS Pose rest
+PASS Laptop action atlas
+PASS Typing alternates hands — 3
+PASS Pause freezes frames and position
+PASS Walk reaches target and returns idle — {"x":235.85471999999993,"y":172}
+PASS Mouse hover triggers jump
+PASS Jump lands and resumes idle — idle
+PASS Jump resumes interrupted typing — typing
+PASS Drag shows held pose
+PASS Drag clamps to container — {"x":412,"y":0}
+PASS Drop suppresses accidental click
+PASS Drop falls, lands and takes steps — idle
+PASS Cancelled drag releases safely
+PASS Touch dragging updates position
+PASS Touch release settles
+PASS Oversized robot fits bounds
+PASS Invalid state falls back safely
+PASS Disconnect cancels animation
+PASS Reconnect works
+PASS Optional autonomy starts an activity — walk
+PASS Reduced motion snaps walking
+PASS Reduced motion suppresses jumping
+PASS Reduced motion keeps typing pose static
+PASS Talking uses new atlas
+PASS Speech is deliberately slow, at most four changes in 1.4 seconds — [764,1132,1516]
+PASS Speech holds each mouth pose at least 330ms
+PASS Mouth settles closed after silence
+PASS Speech meter cannot animate a paused character
+PASS Scratch uses hand-at-head frame
+PASS Dance steps switch at a gentle pace
+PASS Fly is visible during orbit
+PASS Pausing freezes the fly story
+PASS Fly approaches open mouth — catch
+PASS Catch becomes satisfied chewing — chew
+PASS Fly story returns to idle — idle
+PASS Listening interrupts antics and hides the fly
+PASS Reduced motion keeps dancing static

@@ -1,0 +1,60 @@
+<!doctype html><html><meta charset="utf-8"><title>Bebo conversation checks</title><style>body{background:#161b25;color:#dfebff;font:14px system-ui;padding:16px}pre{white-space:pre-wrap}bebo-chat{display:none}#area{width:220px;height:230px;position:fixed;right:0;top:100px;pointer-events:none}#summary{color:#a3dcbf}</style>
+<script src="/bebo/robot.js"></script><script>
+let requests=[],lastRec,audios=[],playBlocked=false,failSpeech=false,holdChat=null,holdSpeech=null;
+class FakeRecognition{
+ constructor(){lastRec=this;this.starts=0;this.aborted=false}
+ start(){this.starts++;this.onstart?.()}
+ abort(){this.aborted=true;this.onend?.()}
+ stop(){this.onend?.()}
+ emit(text,final=true){const result=[{transcript:text}];result.isFinal=final;this.onresult?.({resultIndex:0,results:[result]})}
+}
+window.SpeechRecognition=FakeRecognition;
+window.Audio=function(src){const a=document.createElement('audio');a.src=src;
+a.play=async()=>{if(playBlocked)throw new DOMException('blocked','NotAllowedError');a.testPlaying=true;a.onplaying?.()};a.pause=()=>{a.testPlaying=false};a.load=()=>{};audios.push(a);return a};
+window.fetch=async(url,opt={})=>{
+ const body=opt.body?JSON.parse(opt.body):null;requests.push({url,body,signal:opt.signal});
+ if(String(url).endsWith('/status'))return Response.json({configured:true});
+ if(String(url).endsWith('/speech')){if(holdSpeech)return new Promise(r=>holdSpeech.resolve=r);if(failSpeech)return Response.json({error:{message:'test service down'}},{status:502});return new Response(new Blob(['wav-test'],{type:'audio/wav'}));}
+ if(holdChat)return new Promise(r=>holdChat.resolve=r);
+ return Response.json({reply:'رد آمن <img src=x onerror=alert(1)>',dialect:body.dialect==='saudi'?'saudi':'egyptian',action:null});
+};
+</script><body><h2 id="summary">Running conversation checks…</h2><pre id="results"></pre><div id="area"><cute-robot id="robot" size="128" movable interactive></cute-robot></div><bebo-chat robot="#robot"></bebo-chat>
+<script type="module">
+import '/bebo/bebo-chat.js';
+const chat=document.querySelector('bebo-chat'),robot=document.querySelector('#robot'),log=document.querySelector('#results');
+let pass=0,fail=0;const check=(name,ok)=>{log.textContent+=(ok?'PASS ':'FAIL ')+name+'\n';ok?pass++:fail++};
+const tick=()=>new Promise(r=>setTimeout(r,0));
+try{
+await customElements.whenDefined('bebo-chat');await tick();chat.$('#output').value='text';
+chat.open();check('Compact input visible without opening history',!chat.$('.input-wrap').hidden&&chat.$('.panel').hidden&&!chat.$('.popup').hidden);
+await chat.send('افتح اللاب');check('Laptop command applies locally',robot.state==='typing'&&requests.filter(r=>r.url.endsWith('/chat')).length===0);check('Reply appears in speech bubble',chat.$('.say').textContent===chat.lastReply.text);chat.$('#history-open').click();check('Full conversation opens separately',!chat.$('.panel').hidden&&chat.$('.log').textContent.includes('افتح اللاب'));chat.$('#close').click();check('History closes back to bubble',chat.$('.panel').hidden&&!chat.$('.popup').hidden);
+chat.$('#dialect').value='saudi';await chat.send('انط');check('Explicit Saudi command reply',chat.lastDialect==='saudi'&&chat.$('.log').textContent.includes('أبشر'));
+await chat.send('سؤال عادي');check('Remote conversation renders text safely',!chat.$('.log').querySelector('img')&&chat.$('.log').textContent.includes('<img'));
+check('History and selected dialect passed',requests.at(-1).body.dialect==='saudi'&&requests.at(-1).body.history.length>0);
+chat.$('#output').value='audio';await chat.send('سؤال بالصوت');check('Actual playback event controls speaking pose',robot.state==='speaking'&&chat.dataset.mode==='speaking');
+chat.$('#stop').click();check('Stop pauses sound and offers replay',audios.at(-1).testPlaying===false&&chat.dataset.mode==='idle'&&!chat.$('#replay').hidden);
+await chat.replay();audios.at(-1).onended?.();check('Audio end restores idle',chat.dataset.mode==='idle'&&robot.state==='idle');
+await chat.send('افتح اللاب');check('Command pose survives audio response',robot.state==='typing'&&chat.dataset.mode==='speaking');
+const oldAudio=chat.audio;chat.$('#voice').value='Kore';chat.$('#voice').dispatchEvent(new Event('change'));
+check('Voice changes invalidate cached audio',!chat.audio&&oldAudio.isConnected===false);
+playBlocked=true;await chat.send('حوار جديد');check('Autoplay denied preserves text with replay',chat.$('.notice').textContent.includes('اضغط')&&!chat.$('#replay').hidden&&!!chat.lastReply);
+playBlocked=false;failSpeech=true;await chat.send('صوت غير متاح');check('Speech failure keeps written reply',chat.$('.notice').textContent.includes('الرد النصي موجود')&&chat.lastReply.text.includes('رد آمن'));
+failSpeech=false;chat.$('#output').value='text';holdChat={};const pending=chat.send('قديم');
+await tick();const oldResolve=holdChat.resolve;holdChat=null;await chat.send('انط');oldResolve(Response.json({reply:'STALE REPLY',dialect:'egyptian'}));await pending;
+check('New command suppresses stale response',!chat.$('.log').textContent.includes('STALE REPLY')&&chat.lastReply.action==='jump');
+chat.$('#output').value='audio';holdSpeech={};const waitingAudio=chat.send('افتح اللاب');await tick();const speechResolve=holdSpeech.resolve;
+const count=audios.length;chat.stop();holdSpeech=null;speechResolve(new Response(new Blob(['wav'],{type:'audio/wav'})));await waitingAudio;
+check('Late audio never plays after cancellation',audios.length===count);
+chat.$('#output').value='text';chat.$('#dialect').value='gulf';chat.listen();
+check('Mic starts only on explicit action and uses selected locale',lastRec.starts===1&&lastRec.lang==='ar-KW'&&robot.state==='listening');
+lastRec.emit('ان',false);check('Interim transcription visible without sending',chat.$('#message').value==='ان'&&chat.dataset.mode==='listening');
+lastRec.emit('انط',true);lastRec.onend();await tick();
+check('Final voice command sends exactly once',chat.lastReply.action==='jump'&&chat.lastDialect==='gulf'&&chat.dataset.mode==='idle');
+chat.listen();const rec=lastRec;chat.$('#dismiss-bubble').click();check('Dismiss bubble cancels recording',rec.aborted&&chat.$('.popup').hidden);
+chat.listen();lastRec.onerror({error:'not-allowed'});lastRec.onend();check('Microphone permission error is actionable',chat.$('.notice').textContent.includes('اسمح بالمايك'));
+chat.Recognition=null;chat.listen();check('Unsupported browser offers text fallback',chat.$('.notice').textContent.includes('Chrome أو Edge'));
+chat.clear();check('Clear removes history and playback',chat.history.length===0&&!chat.audio&&!chat.$('.log').querySelector('.message'));
+robot.play('speaking',{loop:true});robot.setSpeechLevel(0);await new Promise(r=>setTimeout(r,450));check('Mouth closes during silence',robot.shadowRoot.querySelector('.sprite').dataset.frame==='0'&&robot.shadowRoot.querySelector('.sprite').dataset.atlas==='speech');robot.setSpeechLevel(.8);await new Promise(r=>setTimeout(r,850));check('Mouth and hand pose responds to speech energy',robot.shadowRoot.querySelector('.sprite').dataset.frame!=='0');robot.setSpeechLevel(null);chat.Recognition=FakeRecognition;chat.listen();const disconnectedRec=lastRec;chat.remove();check('Disconnect cancels mic and pending operations',disconnectedRec.aborted);
+}catch(error){check('Unexpected error: '+error.stack,false)}
+document.querySelector('#summary').textContent=pass+' passed / '+fail+' failed';
+</script></body></html>

@@ -1,0 +1,32 @@
+31 passed / 0 failed
+PASS Compact input visible without opening history
+PASS Laptop command applies locally
+PASS Reply appears in speech bubble
+PASS Full conversation opens separately
+PASS History closes back to bubble
+PASS Explicit Saudi command reply
+PASS Remote conversation renders text safely
+PASS History and selected dialect passed
+PASS Actual playback event controls speaking pose
+PASS Stop pauses sound and offers replay
+PASS Audio end restores idle
+PASS Command pose survives audio response
+PASS Voice changes invalidate cached audio
+PASS Autoplay denied preserves text with replay
+PASS Speech failure keeps written reply
+PASS New command suppresses stale response
+PASS Late audio never plays after cancellation
+PASS Mic starts only on explicit action and uses selected locale
+PASS Interim transcription visible without sending
+PASS Final voice command sends exactly once
+PASS Dismiss bubble cancels recording
+PASS Microphone permission error is actionable
+PASS Unsupported browser offers text fallback
+PASS New command laugh executes in chat
+PASS New command cry executes in chat
+PASS New command plead executes in chat
+PASS New command chase executes in chat
+PASS Clear removes history and playback
+PASS Mouth closes during silence
+PASS Mouth and hand pose responds to speech energy
+PASS Disconnect cancels mic and pending operations

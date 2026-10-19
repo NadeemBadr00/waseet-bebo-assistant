@@ -1,0 +1,1 @@
+Bebo v2: 37 interaction checks passed, 0 failed. Tested image loading, all poses, typing frames, pause, walking, hover jump, resume after jump, drag boundaries, drop/cancel, touch pointer paths, sizing, reconnect, autonomy, reduced-motion logic. Browser console: no errors or warnings. ZIP integrity passed.
