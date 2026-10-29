@@ -163,6 +163,8 @@ export class AssistantStore {
 	readonly lastQuestion = signal('');
 	readonly panelOpen = signal(false);
 	readonly dismissed = signal(false);
+	readonly examActive = signal(false);
+	setExamActive(active: boolean): void { this.examActive.set(active); if (active) this.close(); }
 	readonly skin = signal<BeboSkin>(this.loadSkinPref());
 	readonly characterName = computed(() => (this.skin() === 'scout' ? 'نديم' : 'بيبو'));
 	readonly characterRole = computed(() => (this.skin() === 'scout' ? 'دليل وسيط' : 'المساعد الذكي'));
@@ -427,7 +429,7 @@ export class AssistantStore {
 				stream.getTracks().forEach(t => t.stop()); this.mediaRecorder = null; this.mediaStream = null; this.recording.set(false); this.stopListening();
 				if (seq !== this.recordingSeq || !parts.length) return;
 				const blob = new Blob(parts, { type: recorder.mimeType }); const reader = new FileReader(); this.sttLoading.set(true);
-				reader.onload = () => { if (seq !== this.recordingSeq) return; const audioBase64 = String(reader.result).split(',')[1]; this.sttSub = this.injector.get(AssistantCapabilitiesService).transcribe(audioBase64, blob.type, BEBO_DIALECTS[this.effectiveDialect()].language).subscribe({ next: result => { if (seq !== this.recordingSeq) return; const text = result.text ?? result.transcript ?? result.data?.text ?? result.data?.transcript ?? ''; this.sttLoading.set(false); if (text) this.ask(text.slice(0, MAX_QUESTION_LENGTH)); else this.micNotice.set('لم يظهر كلام واضح في التسجيل.'); }, error: () => { if (seq === this.recordingSeq) { this.sttLoading.set(false); this.micNotice.set('تعذر تفريغ التسجيل. يمكنك استخدام الإملاء أو الكتابة.'); } } }); };
+				reader.onload = () => { if (seq !== this.recordingSeq) return; const audioBase64 = String(reader.result).split(',')[1]; const cleanMime = (blob.type || 'audio/webm').split(';')[0].trim() || 'audio/webm'; this.sttSub = this.injector.get(AssistantCapabilitiesService).transcribe(audioBase64, cleanMime, BEBO_DIALECTS[this.effectiveDialect()].language).subscribe({ next: result => { if (seq !== this.recordingSeq) return; const text = result.text ?? result.transcript ?? result.data?.text ?? result.data?.transcript ?? ''; this.sttLoading.set(false); if (text) this.ask(text.slice(0, MAX_QUESTION_LENGTH)); else this.micNotice.set('لم يظهر كلام واضح في التسجيل.'); }, error: () => { if (seq === this.recordingSeq) { this.sttLoading.set(false); this.micNotice.set('تعذر تفريغ التسجيل. يمكنك استخدام الإملاء أو الكتابة.'); } } }); };
 				reader.onerror = () => { this.sttLoading.set(false); this.micNotice.set('تعذر قراءة التسجيل.'); };
 				reader.readAsDataURL(blob);
 			};

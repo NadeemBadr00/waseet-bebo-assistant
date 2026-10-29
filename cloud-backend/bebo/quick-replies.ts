@@ -26,8 +26,8 @@ const replies = {
 
 // Exact short requests only: a greeting inside a real question must still reach the model.
 const phrases = {
-  intro: ['عرفني بنفسك', 'عرفني بنفسك باختصار', 'عرّفني بنفسك', 'انت مين', 'انت مين يا بيبو', 'مين انت', 'who are you', 'introduce yourself', 'من انت'],
-  hello: ['اهلا', 'اهلا بيبو', 'مرحبا', 'ازيك', 'ازيك يا بيبو', 'هلا', 'هلا والله', 'hello', 'hi', 'hi bebo', 'hey'],
+  intro: ['عرفني بنفسك', 'عرفني بنفسك باختصار', 'عرّفني بنفسك', 'انت مين', 'انت مين يا بيبو', 'مين انت', 'اسمك ايه', 'اسمك اي', 'اهلا اسمك ايه', 'اهلا اسمك اي', 'ما اسمك', 'اهلا ما اسمك', 'وش اسمك', 'شنو اسمك', 'who are you', 'what is your name', 'whats your name', 'hi what is your name', 'introduce yourself', 'من انت'],
+  hello: ['اهلا', 'اهلا بيك', 'اهلا بك', 'اهلا بيبو', 'مرحبا', 'ازيك', 'ازيك يا بيبو', 'السلام عليكم', 'هلا', 'هلا والله', 'hello', 'hi', 'hi bebo', 'hey'],
   thanks: ['شكرا', 'شكرا ليك', 'تسلم', 'مشكور', 'thank you', 'thanks'],
 };
 

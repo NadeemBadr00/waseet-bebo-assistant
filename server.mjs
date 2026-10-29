@@ -8,7 +8,7 @@ const ROOT=path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_UPSTREAM='https://waseet-ai-api-1041761245251.us-central1.run.app';
 const STATIC=new Set(['index.html','preview.css','preview.js','robot.js','robot-sprites.png','robot-actions.png','robot-speaking.png','robot-antics.png','robot-emotions.png','kitten-sprites.png','bebo-chat.js','bebo-core.mjs','bebo-content.mjs','README.md','GENERATION.md']);
 const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.png':'image/png','.md':'text/plain; charset=utf-8'};
-const VOICES=new Set(['Puck','Kore','Fenrir','Aoede','Zephyr','Sulafat','Charon','Leda']);
+const VOICES=new Set(['Puck','Kore','Fenrir','Aoede','Zephyr','Sulafat','Charon','Leda','Orus','Callirrhoe']);
 const MODELS=new Set(['gemini-3.8-flash-lite-tts','gemini-3.8-flash-tts','AUTO']);
 const fault=(status,code,message)=>Object.assign(new Error(message),{status,code});
 async function bodyJSON(req){
